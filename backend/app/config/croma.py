@@ -1,3 +1,4 @@
+# /home/sandeep/Projects/resume-analyzer/backend/app/config/croma.py
 import chromadb
 from chromadb.config import Settings as ChromaSettings
 

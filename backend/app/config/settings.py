@@ -1,3 +1,5 @@
+# /home/sandeep/Projects/resume-analyzer/backend/app/config/settings.py
+
 from pydantic_settings import BaseSettings
 
 
