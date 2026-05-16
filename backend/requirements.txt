@@ -1,3 +1,4 @@
+# /home/sandeep/Projects/resume-analyzer/backend/requirements.txt
 fastapi
 uvicorn[standard]
 
