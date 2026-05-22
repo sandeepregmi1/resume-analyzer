@@ -1,4 +1,5 @@
 from sqlalchemy import Column, Integer, String, ForeignKey, Text, Float, DateTime
+from sqlalchemy.dialects.postgresql import JSONB
 from datetime import datetime
 
 from app.config.database import Base
@@ -14,7 +15,7 @@ class Resume(Base):
     file_name = Column(String, nullable=False)
     raw_text = Column(Text, nullable=True)
 
-    parsed_json = Column(Text, nullable=True)  # structured resume data
+    parsed_json = Column(JSONB, nullable=True)  
 
     ats_score = Column(Float, default=0.0)
 

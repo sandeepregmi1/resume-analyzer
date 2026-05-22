@@ -1,3 +1,4 @@
+# /home/sandeep/Projects/resume-analyzer/backend/app/api/routes/resume_routes.py
 import os
 import shutil
 
@@ -12,6 +13,8 @@ from app.services.parser.pdf_parser import extract_text_from_pdf
 from app.services.parser.docx_parser import extract_text_from_docx
 from app.services.parser.txt_parser import extract_text_from_txt
 from app.services.parser.cleaner import clean_resume_text
+
+from app.services.nlp.embedding_skill_extractor import extract_skills_with_embeddings
 
 
 router = APIRouter()
@@ -54,13 +57,17 @@ async def upload_resume(file: UploadFile = File(...)):
     # Clean text
     cleaned_text = clean_resume_text(raw_text)
 
+    #  AI SKILL EXTRACTION (EMBEDDING ENGINE)
+    skills = extract_skills_with_embeddings(cleaned_text)
+
     # Store in database
     db: Session = SessionLocal()
 
     new_resume = Resume(
-        # user_id=1,  # temporary
+        
         file_name=file.filename,
-        raw_text=cleaned_text
+        raw_text=cleaned_text,
+        parsed_json=skills  
     )
 
     db.add(new_resume)
