@@ -9,7 +9,7 @@ from app.services.nlp.skill_embeddings import (
 # Precompute once
 SKILL_VECTORS = build_skill_embeddings()
 
-# ---------- CONFIG ----------
+# CONFIG 
 TOP_K_TECH = 8
 TOP_K_SOFT = 5
 
