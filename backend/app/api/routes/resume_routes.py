@@ -15,6 +15,7 @@ from app.services.parser.txt_parser import extract_text_from_txt
 from app.services.parser.cleaner import clean_resume_text
 
 from app.services.nlp.embedding_skill_extractor import extract_skills_with_embeddings
+from app.services.ats.ats_calculator import structure_score
 
 
 router = APIRouter()
@@ -57,7 +58,10 @@ async def upload_resume(file: UploadFile = File(...)):
     # Clean text
     cleaned_text = clean_resume_text(raw_text)
 
-    #  AI SKILL EXTRACTION (EMBEDDING ENGINE)
+    # Calculate base structure score
+    base_ats = structure_score(cleaned_text)
+
+    # AI SKILL EXTRACTION (EMBEDDING ENGINE)
     skills = extract_skills_with_embeddings(cleaned_text)
 
     # Store in database
@@ -67,7 +71,8 @@ async def upload_resume(file: UploadFile = File(...)):
         
         file_name=file.filename,
         raw_text=cleaned_text,
-        parsed_json=skills  
+        parsed_json=skills,
+        ats_score=base_ats
     )
 
     db.add(new_resume)

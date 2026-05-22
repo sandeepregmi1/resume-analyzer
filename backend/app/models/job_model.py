@@ -16,4 +16,6 @@ class Job(Base):
 
     required_skills = Column(Text, nullable=True)
 
+    embedding = Column(Text, nullable=True)
+
     created_at = Column(DateTime, default=datetime.utcnow)
