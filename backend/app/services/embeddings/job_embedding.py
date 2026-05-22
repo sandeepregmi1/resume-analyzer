@@ -13,8 +13,9 @@ def prepare_job_text(job):
     """
     Single source of truth for job embedding input
     """
+    skills_str = " ".join(job.required_skills.split(",")) if job.required_skills else ""
     return f"""
     {job.title}
     {job.description}
-    {" ".join(job.required_skills or [])}
+    {skills_str}
     """.lower()

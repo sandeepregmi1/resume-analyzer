@@ -63,8 +63,8 @@ def extract_skills_with_embeddings(text: str):
     soft_filtered = _filter_by_threshold(soft_scored)
 
     # 3. Combine Exact + Semantic, remove duplicates
-    tech_combined = list(dict.fromkeys(tech_exact + [s for s, _ in tech_filtered]))
-    soft_combined = list(dict.fromkeys(soft_exact + [s for s, _ in soft_filtered]))
+    tech_combined = list(dict.fromkeys(tech_exact + tech_filtered))
+    soft_combined = list(dict.fromkeys(soft_exact + soft_filtered))
 
     # Apply Top-K
     technical_found = tech_combined[:TOP_K_TECH]

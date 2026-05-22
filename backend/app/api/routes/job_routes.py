@@ -1,5 +1,6 @@
-from fastapi import APIRouter
+from fastapi import APIRouter, Form
 from sqlalchemy.orm import Session
+from typing import List
 
 from app.config.database import SessionLocal
 from app.models.job_model import Job
@@ -13,7 +14,13 @@ router = APIRouter()
 
 
 @router.post("/create-job")
-def create_job(title: str, description: str, required_skills: list):
+def create_job(
+    title: str = Form(...),
+    description: str = Form(...),
+    required_skills: str = Form(..., description="Comma-separated skills, e.g. python,fastapi,docker")
+):
+    # Parse comma-separated string into clean list
+    skills_list = [s.strip() for s in required_skills.split(",") if s.strip()]
 
     db: Session = SessionLocal()
 
@@ -21,10 +28,10 @@ def create_job(title: str, description: str, required_skills: list):
     job = Job(
         title=title,
         description=description,
-        required_skills=required_skills
+        required_skills=",".join(skills_list)
     )
 
-    # 2. 👉 THIS IS WHERE YOU ADD IT (IMPORTANT)
+    # 2. Generate embedding
     job_text = prepare_job_text(job)
     job.embedding = generate_job_embedding(job_text)
 
@@ -36,5 +43,7 @@ def create_job(title: str, description: str, required_skills: list):
 
     return {
         "message": "Job created with embedding",
-        "job_id": job.id
+        "job_id": job.id,
+        "title": title,
+        "skills_parsed": skills_list
     }
