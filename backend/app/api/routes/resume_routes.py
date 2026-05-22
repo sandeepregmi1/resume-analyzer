@@ -1,4 +1,3 @@
-# /home/sandeep/Projects/resume-analyzer/backend/app/api/routes/resume_routes.py
 import os
 import shutil
 
@@ -6,8 +5,9 @@ from fastapi import APIRouter, UploadFile, File, HTTPException
 from sqlalchemy.orm import Session
 
 from app.config.database import SessionLocal
-
 from app.models.resume_model import Resume
+
+from app.schemas.skill_schema import SkillSchema
 
 from app.services.parser.pdf_parser import extract_text_from_pdf
 from app.services.parser.docx_parser import extract_text_from_docx
@@ -19,16 +19,14 @@ from app.services.ats.ats_calculator import calculate_ats_score
 
 router = APIRouter()
 
-
 UPLOAD_DIR = "app/uploads"
-
 os.makedirs(UPLOAD_DIR, exist_ok=True)
+
 
 @router.post("/upload-resume")
 async def upload_resume(file: UploadFile = File(...)):
 
     file_extension = file.filename.split(".")[-1].lower()
-
     allowed_extensions = ["pdf", "docx", "txt"]
 
     if file_extension not in allowed_extensions:
@@ -37,12 +35,13 @@ async def upload_resume(file: UploadFile = File(...)):
             detail="Only PDF, DOCX, and TXT files are allowed"
         )
 
+    # Save file
     file_path = os.path.join(UPLOAD_DIR, file.filename)
 
     with open(file_path, "wb") as buffer:
         shutil.copyfileobj(file.file, buffer)
 
-    # extract text
+    # Extract text
     if file_extension == "pdf":
         raw_text = extract_text_from_pdf(file_path)
     elif file_extension == "docx":
@@ -50,19 +49,34 @@ async def upload_resume(file: UploadFile = File(...)):
     else:
         raw_text = extract_text_from_txt(file_path)
 
-    # clean
+    # Clean text
     cleaned_text = clean_resume_text(raw_text)
 
-    # skills
-    skills = extract_skills_with_embeddings(cleaned_text)
+    
+    # 1. Skill Extraction (Validated)
+    
+    raw_skills = extract_skills_with_embeddings(cleaned_text)
 
-    # ATS ENGINE (CENTRALIZED)
+    try:
+        skills = SkillSchema(**raw_skills).model_dump()
+    except Exception as e:
+        raise HTTPException(
+            status_code=500,
+            detail=f"Skill schema validation failed: {str(e)}"
+        )
+
+    
+    # 2. ATS ENGINE (FIXED LOGIC)
+    
     ats_result = calculate_ats_score(
         resume_text=cleaned_text,
-        job_text=cleaned_text,
-        skills=skills
+        job_text="",          # FIX: no fake self-comparison
+        missing_skills=[]
     )
 
+    
+    # 3. DB SAVE
+    
     db: Session = SessionLocal()
 
     new_resume = Resume(
@@ -82,5 +96,6 @@ async def upload_resume(file: UploadFile = File(...)):
         "resume_id": new_resume.id,
         "file_name": file.filename,
         "text_preview": cleaned_text[:500],
-        "ats_score": ats_result
+        "ats_score": ats_result,
+        "skills": skills
     }
