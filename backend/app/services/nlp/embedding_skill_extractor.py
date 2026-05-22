@@ -51,17 +51,24 @@ def extract_skills_with_embeddings(text: str):
     # single embedding (stable + deterministic)
     text_embedding = get_embedding(text)
 
-    # score all skills
+    # 1. Exact Keyword Matching (Prevents Signal Dilution)
+    tech_exact = [s for s in TECHNICAL_SKILLS if s in text]
+    soft_exact = [s for s in SOFT_SKILLS if s in text]
+
+    # 2. Semantic Scoring for synonyms/context
     tech_scored = _score_skills(text_embedding, TECHNICAL_SKILLS)
     soft_scored = _score_skills(text_embedding, SOFT_SKILLS)
 
-    # filter weak matches FIRST (important fix)
     tech_filtered = _filter_by_threshold(tech_scored)
     soft_filtered = _filter_by_threshold(soft_scored)
 
-    # then apply top-k only on valid matches
-    technical_found = [s for s, _ in tech_filtered[:TOP_K_TECH]]
-    soft_found = [s for s, _ in soft_filtered[:TOP_K_SOFT]]
+    # 3. Combine Exact + Semantic, remove duplicates
+    tech_combined = list(dict.fromkeys(tech_exact + [s for s, _ in tech_filtered]))
+    soft_combined = list(dict.fromkeys(soft_exact + [s for s, _ in soft_filtered]))
+
+    # Apply Top-K
+    technical_found = tech_combined[:TOP_K_TECH]
+    soft_found = soft_combined[:TOP_K_SOFT]
 
     return {
         "technical_skills": technical_found,

@@ -62,12 +62,12 @@ def calculate_ats_score(resume_text: str, job_text: str, missing_skills=None):
     )
 
     return {
-        "ats_score": round(final_score, 2),
+        "ats_score": float(round(final_score, 2)),
         "breakdown": {
-            "keyword_match": round(kw, 2),
-            "semantic_similarity": round(sem, 2),
-            "skill_match": round(skill_score, 2),
-            "structure_score": round(struct, 2),
+            "keyword_match": float(round(kw, 2)),
+            "semantic_similarity": float(round(sem, 2)),
+            "skill_match": float(round(skill_score, 2)),
+            "structure_score": float(round(struct, 2)),
         },
         "missing_skills": missing_skills or []
     }

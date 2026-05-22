@@ -17,6 +17,8 @@ class Resume(Base):
 
     parsed_json = Column(JSONB, nullable=True)  
 
+    embedding = Column(JSONB, nullable=True)
+
     ats_score = Column(Float, default=0.0)
 
     created_at = Column(DateTime, default=datetime.utcnow)

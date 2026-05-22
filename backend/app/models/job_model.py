@@ -1,3 +1,5 @@
+from sqlalchemy.dialects.postgresql import JSONB
+
 from sqlalchemy import Column, Integer, String, Text, DateTime
 from datetime import datetime
 
@@ -16,6 +18,6 @@ class Job(Base):
 
     required_skills = Column(Text, nullable=True)
 
-    embedding = Column(Text, nullable=True)
+    embedding = Column(JSONB)  # vector stored as list[float]
 
     created_at = Column(DateTime, default=datetime.utcnow)

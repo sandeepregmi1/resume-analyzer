@@ -1,41 +1,40 @@
-from fastapi import APIRouter, Depends
+from fastapi import APIRouter
 from sqlalchemy.orm import Session
 
 from app.config.database import SessionLocal
 from app.models.job_model import Job
+
 from app.services.embeddings.job_embedding import (
     generate_job_embedding,
-    serialize_embedding
+    prepare_job_text
 )
 
 router = APIRouter()
 
 
-def get_db():
-    db = SessionLocal()
-    try:
-        yield db
-    finally:
-        db.close()
-
-
 @router.post("/create-job")
-def create_job(title: str, company: str, description: str, db: Session = Depends(get_db)):
+def create_job(title: str, description: str, required_skills: list):
 
-    embedding = generate_job_embedding(description)
+    db: Session = SessionLocal()
 
-    new_job = Job(
+    # 1. Create job object
+    job = Job(
         title=title,
-        company=company,
         description=description,
-        embedding=serialize_embedding(embedding)
+        required_skills=required_skills
     )
 
-    db.add(new_job)
+    # 2. 👉 THIS IS WHERE YOU ADD IT (IMPORTANT)
+    job_text = prepare_job_text(job)
+    job.embedding = generate_job_embedding(job_text)
+
+    # 3. Save to DB
+    db.add(job)
     db.commit()
-    db.refresh(new_job)
+    db.refresh(job)
+    db.close()
 
     return {
-        "message": "Job created",
-        "job_id": new_job.id
+        "message": "Job created with embedding",
+        "job_id": job.id
     }

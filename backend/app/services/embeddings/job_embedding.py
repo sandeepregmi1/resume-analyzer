@@ -1,15 +1,20 @@
-import json
 from app.services.embeddings.embedding_model import get_embedding
 
 
 def generate_job_embedding(job_text: str):
+    """
+    Always returns: List[float]
+    """
     embedding = get_embedding(job_text)
-    return embedding.tolist()
+    return embedding.tolist()  # standardized output
 
 
-def serialize_embedding(embedding):
-    return json.dumps(embedding)
-
-
-def deserialize_embedding(embedding_str):
-    return json.loads(embedding_str)
+def prepare_job_text(job):
+    """
+    Single source of truth for job embedding input
+    """
+    return f"""
+    {job.title}
+    {job.description}
+    {" ".join(job.required_skills or [])}
+    """.lower()

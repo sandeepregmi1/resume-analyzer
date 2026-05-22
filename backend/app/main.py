@@ -3,7 +3,10 @@ from fastapi import FastAPI
 from app.config.init_db import init_db
 
 
-from app.api.routes import resume_routes, job_routes, matching_routes
+from app.api.routes import resume_routes, job_routes
+from app.api.routes.match_routes import router as match_router
+
+
 
 
 app = FastAPI(
@@ -13,7 +16,8 @@ app = FastAPI(
 
 app.include_router(resume_routes.router)
 app.include_router(job_routes.router)
-app.include_router(matching_routes.router)
+
+app.include_router(match_router)
 
 
 @app.on_event("startup")
@@ -24,5 +28,5 @@ def startup():
 @app.get("/")
 def home():
     return {
-        "message": "Resume Analyzer API is running 🚀"
+        "message": "Resume Analyzer API is running "
     }

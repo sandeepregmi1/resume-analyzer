@@ -16,6 +16,7 @@ from app.services.parser.cleaner import clean_resume_text
 
 from app.services.nlp.embedding_skill_extractor import extract_skills_with_embeddings
 from app.services.ats.ats_calculator import calculate_ats_score
+from app.services.embeddings.resume_embedding import generate_resume_embedding
 
 router = APIRouter()
 
@@ -79,11 +80,15 @@ async def upload_resume(file: UploadFile = File(...)):
     
     db: Session = SessionLocal()
 
+    # Generate standardized List[float] embedding
+    resume_embedding = generate_resume_embedding(cleaned_text)
+
     new_resume = Resume(
         file_name=file.filename,
         raw_text=cleaned_text,
         parsed_json=skills,
-        ats_score=ats_result["ats_score"]
+        ats_score=ats_result["ats_score"],
+        embedding=resume_embedding
     )
 
     db.add(new_resume)
